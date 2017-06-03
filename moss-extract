@@ -12,7 +12,7 @@ RAILS_ENV = config.rails_env
 require RAILS_ROOT + '/config/environment'
 
 def extract_submission(user, problem, submission, outdir_name)
-  dir = "#{outdir_name}/#{user.login}"
+  dir = "#{outdir_name}/#{problem.name}/#{user.login}"
   ext = submission.language.ext
   source_name = "#{problem.name}.#{ext}"
   FileUtils.mkdir_p(dir)
@@ -25,11 +25,20 @@ def main()
   problem_name = ARGV[0]
   outdir_name = ARGV[1]
 
-  problem = Problem.find_by_name(problem_name)
-  User.find_each do |u|
-    last_sub = Submission.find_last_by_user_and_problem(u.id, problem.id)
-    if last_sub!=nil
-      extract_submission(u, problem, last_sub, outdir_name)
+  if problem_name == '-all'
+    problems = Problem.all
+  elsif problem_name == '-all-available'
+    problems = Problem.where(available: true)
+  else
+    problems = [Problem.find_by_name(problem_name)]
+  end
+  
+  problems.each do |problem|
+    User.find_each do |u|
+      last_sub = Submission.find_last_by_user_and_problem(u.id, problem.id)
+      if last_sub!=nil
+        extract_submission(u, problem, last_sub, outdir_name)
+      end
     end
   end
 end
