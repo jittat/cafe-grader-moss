@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+GRADER_ENV = 'grading'
+require File.join(File.dirname(__FILE__),'config/environment')
+
+def config
+  Grader::Configuration.get_instance
+end
+RAILS_ENV = config.rails_env
+require RAILS_ROOT + '/config/environment'
+
+Problem.where(available: true).each do |p|
+  puts "#{p.name}"
+end
